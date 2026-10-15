@@ -47,6 +47,7 @@
 	eula = true;
 	openFirewall = true; #p25565 default
 	jvmOpts = "-Xms2G -Xmx4G";
+	};
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
