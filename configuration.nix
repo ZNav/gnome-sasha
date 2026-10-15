@@ -42,6 +42,11 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
   
+  serverices.minecraft-server = {
+	enable = true;
+	eula = true;
+	openFirewall = true; #p25565 default
+	jvmOpts = "-Xms2G -Xmx4G";
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -77,7 +82,7 @@
    };
 
   # programs.firefox.enable = true;
-    virtualisation.docker.enable = true;
+  virtualisation.docker.enable = true;
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
