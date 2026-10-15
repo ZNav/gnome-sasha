@@ -3,12 +3,13 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 { config, lib, pkgs, ... }:
-
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+
+  nixpkgs.config.allowUnfree = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -41,13 +42,6 @@
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-  
-  services.minecraft-server = {
-	enable = true;
-	eula = true;
-	openFirewall = true; #p25565 default
-	jvmOpts = "-Xms2G -Xmx4G";
-	};
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -66,7 +60,6 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.z = {
      isNormalUser = true;
@@ -100,7 +93,12 @@
    };
 
   # List services that you want to enable:
-
+  services.minecraft-server = {
+	enable = true;
+	eula = true;
+	openFirewall = true; #p25565 default
+	jvmOpts = "-Xms2G -Xmx4G";
+	};
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
