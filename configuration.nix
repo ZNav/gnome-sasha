@@ -42,7 +42,7 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
   
-  serverices.minecraft-server = {
+  services.minecraft-server = {
 	enable = true;
 	eula = true;
 	openFirewall = true; #p25565 default
