@@ -20,7 +20,7 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  # time.timeZone = "Europe/Amsterdam";
+  time.timeZone = "America/New_York";
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -41,7 +41,12 @@
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-  
+  #lid on when closed
+  services.logind.settings.Login = {
+  HandleLidSwitch = "ignore";
+  HandleSwitchDocked = "ignore";
+  HandleSwitchExternalPower = "ignore";
+  };
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
