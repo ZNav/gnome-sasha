@@ -64,9 +64,11 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.sasha = {
     isNormalUser = true;
+    defaultUserShell = pkgs.zsh;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       tree
+      zsh
       git
       vim
       neovim
@@ -96,15 +98,28 @@
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
+  programs.ssh = {
+  	extraConfig = ''
+	Host myhost
+		Hostname 10.0.0.175
+		Port 22
+		User user
+	'';
+	};
 
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+	enable = true;
+	openFirewall = true;
+	settings = {
+		PasswordAuthentication = true;
+		KbdInteractiveAuthentication = true;
+		PermitRootLogin = "yes";
+		AllowUsers = ["sasha"];
+		};
+	};
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
