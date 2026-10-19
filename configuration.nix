@@ -74,6 +74,15 @@
       fastfetch
       cloudflared
       wget
+      ghostty
+      cmus
+      spotatui
+      jellyfin
+      jellyfin-tui
+      halpradio
+      soundcloud2000
+      ostui
+      superseedr
     ];
   };
 
