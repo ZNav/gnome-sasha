@@ -44,8 +44,8 @@
   #lid on when closed
   services.logind.settings.Login = {
   HandleLidSwitch = "ignore";
-  HandleSwitchDocked = "ignore";
-  HandleSwitchExternalPower = "ignore";
+  HandleLidSwitchDocked = "ignore";
+  HandleLidSwitchExternalPower = "ignore";
   };
 
   # Configure keymap in X11
