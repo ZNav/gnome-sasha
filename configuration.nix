@@ -79,7 +79,6 @@
       spotatui
       jellyfin
       jellyfin-tui
-      soundcloud2000
       ostui
       superseedr
     ];
