@@ -80,7 +80,6 @@
       jellyfin
       jellyfin-tui
       ostui
-      superseedr
     ];
   };
 
