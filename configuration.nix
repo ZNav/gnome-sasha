@@ -4,30 +4,22 @@
 
 { config, lib, pkgs, ... }:
 
-let
-  nixcraft = import (builtins.fetchTarball {
-    url = "https://github.com/papermc/nixcraft/archive/refs/heads/main.tar.gz";
-  }) { inherit pkgs; };
-in
 {
   imports = [
     ./hardware-configuration.nix
-    nixcraft.nixosModules.default
   ];
 
-  nixcraft = {
+  nixpkgs.config.allowUnfree = true;
+  services.minecraft-server = {
     enable = true;
-    server.instances.smp = {
-      version = "1.21.1";
-      agreeToEula = true;
-      paper.enable = true;
-      java.memory = 4096;
-      service = {
-        enable = true;
-        autoStart = true;
+    eula = true;
+    jvmOpts = "Xms4096M -Xmx4096M";
+    declarative = true;
+    serverProperties = {
+      "server-port" = 25565;
       };
+    openFirewall = true;
     };
-  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -81,12 +73,15 @@ in
       AllowSuspendThenHibernate = "no";
       };
 };
-  programs.dconf.settings = {
-    "org/gnome/settings-daemon/plugins/power" = {
-      sleep-inactive-ac-type = "nothing";
-      sleep-inactive-ac-timeout = 0;
-    };
-};
+  programs.dconf.enable = true;
+  programs.dconf.profiles.user.databases = [{
+    settings = {
+      "org/gnome/settings-daemon/plugins/power" = {
+        sleep-inactive-ac-type = "nothing";
+        sleep-inactive-ac-timeout = lib.gvariant.mkUint32 0;
+    	};
+	};
+	}];
 #maybe remove?
 services.udev.extraRules = ''
   ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
