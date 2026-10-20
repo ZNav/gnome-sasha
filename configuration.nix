@@ -4,11 +4,30 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  nixcraft = import (builtins.fetchTarball {
+    url = "https://github.com/papermc/nixcraft/archive/refs/heads/main.tar.gz";
+  }) { inherit pkgs; };
+in
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    nixcraft.nixosModules.default
+  ];
+
+  nixcraft = {
+    enable = true;
+    server.instances.smp = {
+      version = "1.21.1";
+      agreeToEula = true;
+      paper.enable = true;
+      java.memory = 4096;
+      service = {
+        enable = true;
+        autoStart = true;
+      };
+    };
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -47,6 +66,31 @@
   HandleLidSwitchDocked = "ignore";
   HandleLidSwitchExternalPower = "ignore";
   };
+  
+  systemd.targets = {
+    sleep.enable = false;
+    suspend.enable = false;
+    hibernate.enable = false;
+    hybrid-sleep.enable = false;
+    };
+  systemd.sleep.settings = {
+    Sleep = {
+      AllowSuspend = "no";
+      AllowHibernation = "no";
+      AllowHybridSleep = "no";
+      AllowSuspendThenHibernate = "no";
+      };
+};
+  programs.dconf.settings = {
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type = "nothing";
+      sleep-inactive-ac-timeout = 0;
+    };
+};
+#maybe remove?
+services.udev.extraRules = ''
+  ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
+'';
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
