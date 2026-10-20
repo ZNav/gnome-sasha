@@ -13,7 +13,7 @@
   services.minecraft-server = {
     enable = true;
     eula = true;
-    jvmOpts = "Xms4096M -Xmx4096M";
+    jvmOpts = "-Xms4096M -Xmx4096M";
     declarative = true;
     serverProperties = {
       "server-port" = 25565;
