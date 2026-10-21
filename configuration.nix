@@ -17,6 +17,9 @@
     declarative = true;
     serverProperties = {
       "server-port" = 25565;
+      enable-rcon = true;
+      "rcon.port" = 25575;
+      "rcon.password" = "ludegnome";
       };
     openFirewall = true;
     };
