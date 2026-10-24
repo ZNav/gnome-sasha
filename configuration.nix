@@ -48,11 +48,27 @@ in
   users.users.sasha = {
     isNormalUser = true;
     useDefaultShell = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "data" ];
     homeMode = "0755";
     packages = with pkgs; [
     ];
   };
+
+  #Groups / Access
+  users.groups.data = { };
+  systemd.tmpfiles.rules = [
+    "d /data 0775 root data -"
+    "d /data/pictures 2775 sasha data -"
+    "d /data/movies 2775 sasha data -"
+    "d /data/shows 2775 sasha data -"
+    "d /data/music 2775 sasha data -"
+    "d /data/books 2775 sasha data -"
+    "d /data/xxx 2775 sasha data -"
+    "d /data/unsorted 2775 sasha data -"
+    "d /data/files 2775 sasha data -"
+    "d /data/.Private 2775 sasha data -"
+    "d /data/videos 2775 sasha data -"
+    ];
 
   #Packages
   environment.systemPackages = with pkgs; [
