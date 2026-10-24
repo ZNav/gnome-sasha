@@ -110,7 +110,6 @@ services.udev.extraRules = ''
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.defaultUserShell = pkgs.zsh;
-      cbonsai
   users.users.sasha = {
     isNormalUser = true;
     useDefaultShell = true;
