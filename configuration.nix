@@ -124,12 +124,9 @@ services.udev.extraRules = ''
     ];
   };
 
-  virtualisation.docker.enable = true;
-  # programs.firefox.enable = true;
+virtualisation.docker.enable = true;
 
-  # List packages installed in system profile.
-  # You can use https://search.nixos.org/ to find more packages (and options).
-  environment.systemPackages = with pkgs; [
+environment.systemPackages = with pkgs; [
     vim
     wget
     mcrcon
@@ -157,12 +154,20 @@ services.udev.extraRules = ''
 		ll="ls -lah";
 		ls="eza --icons=auto";
 		filecnt="ls -1A | wc -l";
+		nvim="nvim -c 'set number'";
 		};
 	};
   	
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
-  # programs.mtr.enable = true;
+programs.neovim = {
+  enable = true;
+  configure.customRC = ''
+    set number
+  '';
+};
+
+programs.zoxide.enable = true;
   programs.ssh = {
   	extraConfig = ''
 	Host myhost
