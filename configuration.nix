@@ -6,13 +6,31 @@
 }:
 
   #Imports
+
+let
+  nixvim = import(builtins.fetchGit {
+    url = "https://github.com/nix-community/nixvim";
+    ref = "nixos-26.05";
+    });
+in
+
 {
   imports = [
     ./hardware-configuration.nix
+    nixvim.nixosModules.nixvim
   ];
 
   #Configs
+
   nixpkgs.config.allowUnfree = true;
+
+  #IDE Config
+  programs.nixvim = {
+    enable = true;
+    opts = {
+      number = true;
+      };
+    };
 
   #Bootloader
   boot.loader.systemd-boot.enable = true;
@@ -65,13 +83,7 @@
     };
   };
 
-  #IDE
-  programs.neovim = {
-    enable = true;
-    configure.customRC = ''
-      set number
-    '';
-  };
+ 
 
   #Improved Directory Mobility
   programs.zoxide.enable = true;
@@ -150,6 +162,7 @@
 
   #Networking
    networking.firewall.allowedTCPPorts = [
+     22 # SSH
      2283 # Immich
      8096 # Jellyfin
      25565 # Minecraft
@@ -160,7 +173,6 @@
   #Open SSH
   services.openssh = {
     enable = true;
-    openFirewall = true;
     settings = {
       PasswordAuthentication = true;
       KbdInteractiveAuthentication = true;
