@@ -31,6 +31,7 @@
     isNormalUser = true;
     useDefaultShell = true;
     extraGroups = [ "wheel" ];
+    homeMode = "0755";
     packages = with pkgs; [
     ];
   };
@@ -153,7 +154,6 @@
      8096 # Jellyfin
      25565 # Minecraft
    ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
   networking.hostName = "sasha";
   networking.networkmanager.enable = true;
 
