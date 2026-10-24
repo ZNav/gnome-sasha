@@ -24,6 +24,12 @@
     openFirewall = true;
     };
 
+    services.immich = {
+    	enable = true;
+	host = "0.0.0.0";
+	openFirewall = false;
+	};
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -142,12 +148,14 @@ services.udev.extraRules = ''
     jellyfin-tui
     ostui
     cbonsai
+    eza
   ];
   programs.zsh = {
   	enable = true;
 	shellAliases = {
 		".."="cd ..";
 		ll="ls -lah";
+		ls="eza --icons=auto";
 		filecnt="ls -1A | wc -l";
 		};
 	};
