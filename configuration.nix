@@ -115,21 +115,6 @@ services.udev.extraRules = ''
     useDefaultShell = true;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
-      tree
-      zsh
-      git
-      vim
-      neovim
-      ranger
-      fastfetch
-      cloudflared
-      wget
-      ghostty
-      cmus
-      spotatui
-      jellyfin
-      jellyfin-tui
-      ostui
     ];
   };
 
@@ -142,6 +127,21 @@ services.udev.extraRules = ''
     vim
     wget
     mcrcon
+    tree
+    zsh
+    git
+    neovim
+    ranger
+    fastfetch
+    cloudflared
+    wget
+    ghostty
+    cmus
+    spotatui
+    jellyfin
+    jellyfin-tui
+    ostui
+    cbonsai
   ];
   programs.zsh.enable = true;
   # Some programs need SUID wrappers, can be configured further or are
