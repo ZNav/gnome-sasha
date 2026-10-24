@@ -1,15 +1,91 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-{ config, lib, pkgs, ... }:
-
+  #Imports
 {
   imports = [
     ./hardware-configuration.nix
   ];
 
+  #Configs
   nixpkgs.config.allowUnfree = true;
+
+  #Bootloader
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  #DateTime
+  time.timeZone = "America/New_York";
+
+  #Keymaps
+  services.xserver.xkb.layout = "us";
+  services.xserver.xkb.options = "caps:escape";
+
+  #Default User
+  users.defaultUserShell = pkgs.zsh;
+  users.users.sasha = {
+    isNormalUser = true;
+    useDefaultShell = true;
+    extraGroups = [ "wheel" ];
+    packages = with pkgs; [
+    ];
+  };
+
+  #Packages
+  environment.systemPackages = with pkgs; [
+    vim # utilites
+    wget # utilities
+    tree # utilities
+    eza # utilites
+    zsh # shell
+    git # version control
+    neovim # text editor QOL
+    fastfetch # stats
+    ghostty # terminal
+    cmus # TUI audio player
+    ranger # TUI file explorer
+    cbonsai # screensaver
+  ];
+
+  #Programs
+
+  #Shell
+  programs.zsh = {
+    enable = true;
+    shellAliases = {
+      ".." = "cd ..";
+      ll = "ls -lah";
+      #ls = "eza --icons=auto";
+      filecnt = "ls -1A | wc -l";
+    };
+  };
+
+  #IDE
+  programs.neovim = {
+    enable = true;
+    configure.customRC = ''
+      set number
+    '';
+  };
+
+  #Improved Directory Mobility
+  programs.zoxide.enable = true;
+  programs.ssh = {
+    extraConfig = ''
+      	Host myhost
+      		Hostname 10.0.0.175
+      		Port 22
+      		User user
+      	'';
+  };
+
+  #Services
+
+  #Hosting local Minecraft Server (Vanilla)
   services.minecraft-server = {
     enable = true;
     eula = true;
@@ -17,209 +93,82 @@
     declarative = true;
     serverProperties = {
       "server-port" = 25565;
-      enable-rcon = true;
-      "rcon.port" = 25575;
-      "rcon.password" = "ludegnome";
-      };
-    openFirewall = true;
+    };
+  };
+
+  #Hosting "Google Photos"
+  services.immich = {
+    enable = true;
+    host = "0.0.0.0";
+  };
+
+  #Hosting "Netflix"
+  services.jellyfin = {
+    enable = true;
     };
 
-    services.immich = {
-    	enable = true;
-	host = "0.0.0.0";
-	openFirewall = false;
-	};
-
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  networking.hostName = "sasha"; # Define your hostname.
-
-  # Configure network connections interactively with nmcli or nmtui.
-  networking.networkmanager.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "America/New_York";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
-
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-
-  # Enable the GNOME Desktop Environment.
+  #Desktop Manager
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-  #lid on when closed
+
+  #Power Management
   services.logind.settings.Login = {
-  HandleLidSwitch = "ignore";
-  HandleLidSwitchDocked = "ignore";
-  HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
   };
-  
+
   systemd.targets = {
     sleep.enable = false;
     suspend.enable = false;
     hibernate.enable = false;
     hybrid-sleep.enable = false;
-    };
+  };
   systemd.sleep.settings = {
     Sleep = {
       AllowSuspend = "no";
       AllowHibernation = "no";
       AllowHybridSleep = "no";
       AllowSuspendThenHibernate = "no";
-      };
-};
+    };
+  };
   programs.dconf.enable = true;
-  programs.dconf.profiles.user.databases = [{
+  programs.dconf.profiles.user.databases = [
+    {
+      settings = {
+        "org/gnome/settings-daemon/plugins/power" = {
+          sleep-inactive-ac-type = "nothing";
+          sleep-inactive-ac-timeout = lib.gvariant.mkUint32 0;
+        };
+      };
+    }
+  ];
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
+  '';
+
+  #Networking
+   networking.firewall.allowedTCPPorts = [
+     2283 # Immich
+     8096 # Jellyfin
+     25565 # Minecraft
+   ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.hostName = "sasha";
+  networking.networkmanager.enable = true;
+
+  #Open SSH
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
     settings = {
-      "org/gnome/settings-daemon/plugins/power" = {
-        sleep-inactive-ac-type = "nothing";
-        sleep-inactive-ac-timeout = lib.gvariant.mkUint32 0;
-    	};
-	};
-	}];
-#maybe remove?
-services.udev.extraRules = ''
-  ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
-'';
-
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  # services.pulseaudio.enable = true;
-  # OR
-  # services.pipewire = {
-  #   enable = true;
-  #   pulse.enable = true;
-  # };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.defaultUserShell = pkgs.zsh;
-  users.users.sasha = {
-    isNormalUser = true;
-    useDefaultShell = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-    ];
+      PasswordAuthentication = true;
+      KbdInteractiveAuthentication = true;
+      PermitRootLogin = "yes";
+      AllowUsers = [ "sasha" ];
+    };
   };
 
-virtualisation.docker.enable = true;
-
-environment.systemPackages = with pkgs; [
-    vim
-    wget
-    mcrcon
-    tree
-    zsh
-    git
-    neovim
-    ranger
-    fastfetch
-    cloudflared
-    wget
-    ghostty
-    cmus
-    spotatui
-    jellyfin
-    jellyfin-tui
-    ostui
-    cbonsai
-    eza
-  ];
-  programs.zsh = {
-  	enable = true;
-	shellAliases = {
-		".."="cd ..";
-		ll="ls -lah";
-		ls="eza --icons=auto";
-		filecnt="ls -1A | wc -l";
-		nvim="nvim -c 'set number'";
-		};
-	};
-  	
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-programs.neovim = {
-  enable = true;
-  configure.customRC = ''
-    set number
-  '';
-};
-
-programs.zoxide.enable = true;
-  programs.ssh = {
-  	extraConfig = ''
-	Host myhost
-		Hostname 10.0.0.175
-		Port 22
-		User user
-	'';
-	};
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh = {
-	enable = true;
-	openFirewall = true;
-	settings = {
-		PasswordAuthentication = true;
-		KbdInteractiveAuthentication = true;
-		PermitRootLogin = "yes";
-		AllowUsers = ["sasha"];
-		};
-	};
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "26.05"; # Did you read the comment?
-
+  #DO NOT TOUCH BELOW THIS 
+  system.stateVersion = "26.05";
 }
-
