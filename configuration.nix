@@ -110,6 +110,7 @@ services.udev.extraRules = ''
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.defaultUserShell = pkgs.zsh;
+      cbonsai
   users.users.sasha = {
     isNormalUser = true;
     useDefaultShell = true;
@@ -143,7 +144,15 @@ services.udev.extraRules = ''
     ostui
     cbonsai
   ];
-  programs.zsh.enable = true;
+  programs.zsh = {
+  	enable = true;
+	shellAliases = {
+		".."="cd ..";
+		ll="ls -lah";
+		filecnt="ls -1A | wc -l";
+		};
+	};
+  	
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
