@@ -97,6 +97,40 @@
 
   #Services
 
+  #Hosting homepage
+  services.glance = {
+    enable = true;
+    settings = {
+      server = {
+        host = "0.0.0.0";
+	};
+        pages = [{
+	  name = "gnomenav";
+	  columns = [{
+	    size = "small";
+	    widgets = [
+	      { type = "calendar"; }
+	      ];
+	    }];
+	}
+	  {
+	    size = "full";
+	      widgets = [{
+		type = "bookmarks";
+		groups = [{
+		    name = "services";
+		    links = [
+		      { name = "jellyfin"; url = "http://10.0.0.175:8096"; }
+		      { name = "immich"; url = "http://10.0.0.175:2283"; }
+		    ];
+		}];
+	      }];
+	   }
+	];
+      };
+    };
+
+
   #Hosting local Minecraft Server (Vanilla)
   services.minecraft-server = {
     enable = true;
@@ -162,6 +196,7 @@
   #Networking
    networking.firewall.allowedTCPPorts = [
      22 # SSH
+     5860 # Homepage
      2283 # Immich
      8096 # Jellyfin
      25565 # Minecraft
