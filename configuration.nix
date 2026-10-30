@@ -12,7 +12,6 @@
   ];
 
   #Configs
-
   nixpkgs.config.allowUnfree = true;
 
   #Bootloader
@@ -97,39 +96,30 @@
 
   #Services
 
-  #Hosting homepage
-  services.glance = {
-    enable = true;
-    settings = {
-      server = {
-        host = "0.0.0.0";
-	};
-        pages = [{
-	  name = "gnomenav";
-	  columns = [{
-	    size = "small";
-	    widgets = [
-	      { type = "calendar"; }
-	      ];
-	    }];
-	}
-	  {
-	    size = "full";
-	      widgets = [{
-		type = "bookmarks";
-		groups = [{
-		    name = "services";
-		    links = [
-		      { name = "jellyfin"; url = "http://10.0.0.175:8096"; }
-		      { name = "immich"; url = "http://10.0.0.175:2283"; }
-		    ];
-		}];
-	      }];
-	   }
-	];
-      };
-    };
+  #Networking
+   networking.firewall.allowedTCPPorts = [
+     22 # SSH
+     8080 # Qbitt
+     2283 # Immich
+     8096 # Jellyfin
+     25565 # Minecraft
+   ];
+  networking.hostName = "sasha";
+  networking.networkmanager.enable = true;
 
+  #Homepage
+  services.homer = {
+    enable = true;
+    virtualHost = "localhost";
+    settings = {
+      title = "gnomehome";
+      services = [
+        { name = "jellyfin"; icon = "mdi:televison-classic"; url = "http://localhost:8096"; }
+        { name = "qbit"; icon = "mdi:download-network"; url = "http://localhost:8080"; }
+        { name = "immich"; icon = "mdi:photo-library"; url = "http://localhost:2283"; }
+      ];
+    };
+  };
 
   #Hosting local Minecraft Server (Vanilla)
   services.minecraft-server = {
@@ -140,6 +130,11 @@
     serverProperties = {
       "server-port" = 25565;
     };
+  };
+
+  #Hosting Qbit
+  services.qbittorrent = {
+    enable = true;
   };
 
   #Hosting "Google Photos"
@@ -192,17 +187,6 @@
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
   '';
-
-  #Networking
-   networking.firewall.allowedTCPPorts = [
-     22 # SSH
-     5860 # Homepage
-     2283 # Immich
-     8096 # Jellyfin
-     25565 # Minecraft
-   ];
-  networking.hostName = "sasha";
-  networking.networkmanager.enable = true;
 
   #Open SSH
   services.openssh = {
