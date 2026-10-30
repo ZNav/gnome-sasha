@@ -6,31 +6,14 @@
 }:
 
   #Imports
-
-let
-  nixvim = import(builtins.fetchGit {
-    url = "https://github.com/nix-community/nixvim";
-    ref = "nixos-26.05";
-    });
-in
-
 {
   imports = [
     ./hardware-configuration.nix
-    nixvim.nixosModules.nixvim
   ];
 
   #Configs
 
   nixpkgs.config.allowUnfree = true;
-
-  #IDE Config
-  programs.nixvim = {
-    enable = true;
-    opts = {
-      number = true;
-      };
-    };
 
   #Bootloader
   boot.loader.systemd-boot.enable = true;
