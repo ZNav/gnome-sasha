@@ -5,123 +5,173 @@
   ...
 }:
 
-  #Imports
+let
+
+  # gnomepage tui - util
+  gnomepage = pkgs.writeShellApplication {
+    name = "gnomepage";
+    runtimeInputs = with pkgs; [ fastfetch cbonsai ncurses ];
+    text = ''
+      clear
+      echo "hello sasha :p"
+      echo ""
+      echo "          ~ some options for my favorite baby bing ~ "
+      echo " ll       ~ list files ~ "
+      echo " filecnt  ~ count files in dir ~ "
+      echo " mpgToWav ~ convert camcorder footy ~ "
+      echo " ranger   ~ file manager ~ "
+      echo " cmus     ~ music player ~ "
+      echo " git/vim  ~ usual suspects ~ "
+      echo ""
+      cbonsai -p
+    '';
+  };
+
+  # video converter - scripts 
+  mpgToWav = pkgs.writeShellApplication {
+    name = "mpgToWav";
+    runtimeInputs = [ pkgs.ffmpeg ];
+    text = ''
+      dir="''${1:-.}"
+      shopt -s nullglob nocaseglob
+      files=("$dir"/*.mpg)
+      if [ "''${#files[@]}" -eq 0 ]; then
+        echo "No .mpg files found in $dir" >&2
+        exit 1
+      fi
+      for f in "''${files[@]}"; do
+        out="''${f%.*}.wav"
+        echo "converting $(basename "$f") -> $(basename "$out")"
+        ffmpeg -nostdin -y -i "$f" -vn -c:a pcm_s16le "$out"
+      done
+    '';
+  };
+
+in
+
+
 {
   imports = [
     ./hardware-configuration.nix
   ];
 
-  #Configs
+  # - config
   nixpkgs.config.allowUnfree = true;
 
-  #Bootloader
+  # Bootloader - util
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  #DateTime
+  # DateTime - config
   time.timeZone = "America/New_York";
 
-  #Keymaps
+  # Keymaps - config
   services.xserver.xkb.layout = "us";
   services.xserver.xkb.options = "caps:escape";
 
-  #Default User
+  # Default User - config
   users.defaultUserShell = pkgs.zsh;
   users.users.sasha = {
     isNormalUser = true;
     useDefaultShell = true;
     extraGroups = [ "wheel" "data" ];
     homeMode = "0755";
-    packages = with pkgs; [
-    ];
+    packages = with pkgs; [ ];
   };
 
-  #Groups / Access
-  users.groups.data = { };
+  # neovim in sudo - config
+  environment.etc."root/.config/nvim/init.vim".text = ''
+    augroup nixosConfNumbers
+      autocmd!
+      autocmd BufRead,BufNewFile /etc/nixos/configuration.nix setlocal number
+    augroup END
+  '';
+
+  # Groups / Access - ark
   systemd.tmpfiles.rules = [
+    "d /root/.config 0755 root root -"
+    "d /root/.config/nvim 0755 root root -"
     "d /data 0775 root data -"
     "d /data/pictures 2775 sasha data -"
     "d /data/movies 2775 sasha data -"
     "d /data/shows 2775 sasha data -"
     "d /data/music 2775 sasha data -"
     "d /data/books 2775 sasha data -"
-    "d /data/xxx 2775 sasha data -"
     "d /data/unsorted 2775 sasha data -"
     "d /data/files 2775 sasha data -"
     "d /data/.Private 2775 sasha data -"
     "d /data/videos 2775 sasha data -"
-    ];
+  ];
 
-  #Packages
+  # Packages - ark
   environment.systemPackages = with pkgs; [
-    vim # utilites
+    gnomepage # util
+    mpgToWav # scripts
+    vim # utilities
+    neovim # utilities
     wget # utilities
     tree # utilities
-    eza # utilites
+    eza # utilities
     zsh # shell
     git # version control
-    neovim # text editor QOL
     fastfetch # stats
     ghostty # terminal
     cmus # TUI audio player
     ranger # TUI file explorer
     cbonsai # screensaver
+    nil # syntax check
   ];
 
-  #Programs
+  # Programs
 
-  #Shell
+  # aliases/shell - util
   programs.zsh = {
     enable = true;
     shellAliases = {
       ".." = "cd ..";
-      ll = "ls -lah";
-      #ls = "eza --icons=auto";
-      filecnt = "ls -1A | wc -l";
+      "ll" = "ls -lah";
+      "gp" = "gnomepage";
+      "welcome" = "gnomepage";
+      "filecnt" = "ls -1A | wc -l";
+    };
+    interactiveShellInit = ''
+      gnomepage
+    '';
+  };
+
+  # neovim - util
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    vimAlias = true;
+
+    configure = {
+      packages = { };
+      extraContent = {
+        init = ''
+	  augroup nixosConfNumber
+	    autocmd!
+	    autocmd BufRead,BufNewFile /etc/nixos/configuration.nix setlocal number
+	  augroup END
+	'';
+      };
     };
   };
 
- 
+  # Services
 
-  #Improved Directory Mobility
-  programs.zoxide.enable = true;
-  programs.ssh = {
-    extraConfig = ''
-      	Host myhost
-      		Hostname 10.0.0.175
-      		Port 22
-      		User user
-      	'';
-  };
-
-  #Services
-
-  #Networking
-   networking.firewall.allowedTCPPorts = [
-     22 # SSH
-     8080 # Qbitt
-     2283 # Immich
-     8096 # Jellyfin
-     25565 # Minecraft
-   ];
+  # Networking - firewall
+  networking.firewall.allowedTCPPorts = [
+    22 # SSH
+    8080 # Qbitt
+    2283 # Immich
+    8096 # Jellyfin
+    25565 # Minecraft
+  ];
   networking.hostName = "sasha";
   networking.networkmanager.enable = true;
 
-  #Homepage
-  services.homer = {
-    enable = true;
-    virtualHost = "localhost";
-    settings = {
-      title = "gnomehome";
-      services = [
-        { name = "jellyfin"; icon = "mdi:televison-classic"; url = "http://localhost:8096"; }
-        { name = "qbit"; icon = "mdi:download-network"; url = "http://localhost:8080"; }
-        { name = "immich"; icon = "mdi:photo-library"; url = "http://localhost:2283"; }
-      ];
-    };
-  };
-
-  #Hosting local Minecraft Server (Vanilla)
+  # Hosting local Minecraft Server (Vanilla) - service (local)
   services.minecraft-server = {
     enable = true;
     eula = true;
@@ -132,27 +182,27 @@
     };
   };
 
-  #Hosting Qbit
+  # Hosting Qbit - service
   services.qbittorrent = {
     enable = true;
   };
 
-  #Hosting "Google Photos"
+  # Hosting Photo Browser - service
   services.immich = {
     enable = true;
     host = "0.0.0.0";
   };
 
-  #Hosting "Netflix"
+  # Hosting Media Server - service
   services.jellyfin = {
     enable = true;
-    };
+  };
 
-  #Desktop Manager
+  # Desktop Manager - util
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
-  #Power Management
+  # Power Management - util
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
     HandleLidSwitchDocked = "ignore";
@@ -188,7 +238,7 @@
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
   '';
 
-  #Open SSH
+  # Open SSH - ark
   services.openssh = {
     enable = true;
     settings = {
@@ -199,6 +249,7 @@
     };
   };
 
-  #DO NOT TOUCH BELOW THIS 
+  # DO NOT TOUCH BELOW THIS
   system.stateVersion = "26.05";
 }
+ 
