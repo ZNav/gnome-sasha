@@ -101,6 +101,7 @@ in
       "scrub" = "tidy && sudo nix-collect-garbage";
       "gs" = "'+set number'";
       "nvim" = "nvim '+set number'";
+      "" = "gp";
     };
     interactiveShellInit = ''
       gnomepage
