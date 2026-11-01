@@ -17,39 +17,19 @@ let
       echo "hello sasha :p"
       echo ""
       echo "          ~ some options for my favorite baby bing ~ "
-      echo " ll       ~ list files ~ "
       echo " cfig     ~ opens configuration.nix in nvim ~ "
       echo " wrkspc   ~ changes dirs to where configuration.nix is ~ "
-      echo " rib      ~ run it back runs sudo nixos-rebuild switch ~ "
+      echo " ll       ~ list files ~ "
       echo " filecnt  ~ count files in dir ~ "
-      echo " mpgToWav ~ convert camcorder footy ~ "
       echo " ranger   ~ file manager ~ "
       echo " cmus     ~ music player ~ "
-      echo " git/vim  ~ usual suspects ~ "
-      echo " heave    ~ rib then gitbs ~ "
+      echo " rib      ~ run it back runs sudo nixos-rebuild switch ~ "
       echo " gitbs    ~ adds configuration.nix ~ "
-      echo "gp        ~ this page :o "
+      echo " heave    ~ rib then gitbs ~ "
+      echo " tidy     ~ source zsh ~ "
+      echo " scrub    ~ collect nix garbage and source zsh ~ "
+      echo " gp       ~ this page :o "
       echo ""
-    '';
-  };
-
-  # video converter - scripts 
-  mpgToWav = pkgs.writeShellApplication {
-    name = "mpgToWav";
-    runtimeInputs = [ pkgs.ffmpeg ];
-    text = ''
-      dir="''${1:-.}"
-      shopt -s nullglob nocaseglob
-      files=("$dir"/*.mpg)
-      if [ "''${#files[@]}" -eq 0 ]; then
-        echo "No .mpg files found in $dir" >&2
-        exit 1
-      fi
-      for f in "''${files[@]}"; do
-        out="''${f%.*}.wav"
-        echo "converting $(basename "$f") -> $(basename "$out")"
-        ffmpeg -nostdin -y -i "$f" -vn -c:a pcm_s16le "$out"
-      done
     '';
   };
 
@@ -87,8 +67,6 @@ in
 
   # Groups / Access - ark
   systemd.tmpfiles.rules = [
-    "d /root/.config 0755 root root -"
-    "d /root/.config/nvim 0755 root root -"
     "d /data 0775 root data -"
     "d /data/pictures 2775 sasha data -"
     "d /data/movies 2775 sasha data -"
@@ -104,7 +82,7 @@ in
   # Packages - ark
   environment.systemPackages = with pkgs; [
     gnomepage # util
-    mpgToWav # scripts
+    neovim # util
     vim # utilities
     wget # utilities
     tree # utilities
@@ -116,7 +94,6 @@ in
     cmus # TUI audio player
     ranger # TUI file explorer
     cbonsai # screensaver
-    nil # syntax check
   ];
 
   # Programs
@@ -128,7 +105,6 @@ in
       ".." = "cd ..";
       "ll" = "ls -lah";
       "gp" = "gnomepage";
-      "welcome" = "gnomepage";
       "filecnt" = "ls -1A | wc -l";
       "wrkspc" = "cd ~ && cd ../../etc/nixos";
       "cfig" = "wrkspc && nvim configuration.nix";
@@ -136,26 +112,14 @@ in
       "gitbs" = "git add configuration.nix";
       "heave" = "rib && gitbs";
       "commit" = "git commit -m ";
+      "tidy" = "cd ~ && source ~/.zshrc";
+      "scrub" = "tidy && sudo nix-collect-garbage";
+      "gs" = "'+set number'";
+      "nvim" = "nvim '+set number'";
     };
     interactiveShellInit = ''
       gnomepage
     '';
-  };
-
-  # neovim - util
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    vimAlias = true;
-
-    configure = {
-      packages = { };
-      extraContent = {
-        init = ''
-	  :set number
-	'';
-      };
-    };
   };
 
   # Services
