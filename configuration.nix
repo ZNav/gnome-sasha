@@ -1,3 +1,24 @@
+# roadmap{
+  # *jellyfin
+  # *photo host
+  # *minecraft server
+  # *nvim auto set number
+  # seafile
+  # live TV (playlists with downloaded ads)
+  # HTB ez deploy vm partially persistant
+  # SSO all services
+  # homepage w/ hyperlinks and admin controls
+  # remote access (cloudflare tunnel? vpn?)
+  # caps->esc keybind
+  # configure router for pihole / other ad blocker
+  #
+  #mullvad{
+  #   find some good form of indexing that allows for playlist creation
+  # prowlarr -> qbittorrent -> data
+  #}
+  # data -> seafile -> jellyfin
+#};
+
 {
   config,
   lib,
@@ -41,21 +62,18 @@ in
     ./hardware-configuration.nix
   ];
 
-  # - config
-  nixpkgs.config.allowUnfree = true;
-
-  # Bootloader - util
+#Initialization
+  # bootloader - util
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # DateTime - config
+#Config
+  nixpkgs.config.allowUnfree = true;
+  services.xserver.xkb.layout = "us";
   time.timeZone = "America/New_York";
 
-  # Keymaps - config
-  services.xserver.xkb.layout = "us";
-  services.xserver.xkb.options = "caps:escape";
 
-  # Default User - config
+  # user - config
   users.defaultUserShell = pkgs.zsh;
   users.users.sasha = {
     isNormalUser = true;
@@ -65,40 +83,7 @@ in
     packages = with pkgs; [ ];
   };
 
-  # Groups / Access - ark
-  systemd.tmpfiles.rules = [
-    "d /data 0775 root data -"
-    "d /data/pictures 2775 sasha data -"
-    "d /data/movies 2775 sasha data -"
-    "d /data/shows 2775 sasha data -"
-    "d /data/music 2775 sasha data -"
-    "d /data/books 2775 sasha data -"
-    "d /data/unsorted 2775 sasha data -"
-    "d /data/files 2775 sasha data -"
-    "d /data/.Private 2775 sasha data -"
-    "d /data/videos 2775 sasha data -"
-  ];
-
-  # Packages - ark
-  environment.systemPackages = with pkgs; [
-    gnomepage # util
-    neovim # util
-    vim # utilities
-    wget # utilities
-    tree # utilities
-    eza # utilities
-    zsh # shell
-    git # version control
-    fastfetch # stats
-    ghostty # terminal
-    cmus # TUI audio player
-    ranger # TUI file explorer
-    cbonsai # screensaver
-  ];
-
-  # Programs
-
-  # aliases/shell - util
+  # commands - config
   programs.zsh = {
     enable = true;
     shellAliases = {
@@ -122,9 +107,47 @@ in
     '';
   };
 
-  # Services
+  # file management - arc
+  systemd.tmpfiles.rules = [
+    "d /data 0775 root data -"
+    "d /data/pictures 2775 sasha data -"
+    "d /data/movies 2775 sasha data -"
+    "d /data/shows 2775 sasha data -"
+    "d /data/music 2775 sasha data -"
+    "d /data/books 2775 sasha data -"
+    "d /data/unsorted 2775 sasha data -"
+    "d /data/files 2775 sasha data -"
+    "d /data/.Private 2775 sasha data -"
+    "d /data/videos 2775 sasha data -"
+  ];
 
-  # Networking - firewall
+  # packages - arc
+  environment.systemPackages = with pkgs; [
+    gnomepage # util
+    neovim # util
+    wget # utilities
+    tree # utilities
+    eza # utilities
+    git # version control
+    fastfetch # stats
+    ghostty # terminal
+    cmus # TUI audio player
+    ranger # TUI file explorer
+    cbonsai # screensaver
+  ];
+
+  # SSH - arc
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = true;
+      KbdInteractiveAuthentication = true;
+      PermitRootLogin = "yes";
+      AllowUsers = [ "sasha" ];
+    };
+  };
+
+  # firewall - arc
   networking.firewall.allowedTCPPorts = [
     22 # SSH
     8080 # Qbitt
@@ -135,7 +158,9 @@ in
   networking.hostName = "sasha";
   networking.networkmanager.enable = true;
 
-  # Hoshting local Minecraft Server (Vanilla) - service (local)
+# Services
+
+  # minecraft - service
   services.minecraft-server = {
     enable = true;
     eula = true;
@@ -146,27 +171,29 @@ in
     };
   };
 
-  # Hosting Qbit - service
+  # qbit - service
   services.qbittorrent = {
     enable = true;
   };
 
-  # Hosting Photo Browser - service
+  # photo browser - service
   services.immich = {
     enable = true;
     host = "0.0.0.0";
   };
 
-  # Hosting Media Server - service
+  # media server - service
   services.jellyfin = {
     enable = true;
   };
 
-  # Desktop Manager - util
+#Util
+
+  # desktop manager - util
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
-  # Power Management - util
+  # power management - util
   services.logind.settings.Login = {
     HandleLidSwitch = "ignore";
     HandleLidSwitchDocked = "ignore";
@@ -202,18 +229,8 @@ in
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="pcieport", ATTR{power/wakeup}="disabled"
   '';
 
-  # Open SSH - ark
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      KbdInteractiveAuthentication = true;
-      PermitRootLogin = "yes";
-      AllowUsers = [ "sasha" ];
-    };
-  };
 
-  # DO NOT TOUCH BELOW THIS
+# DO NOT TOUCH BELOW THIS
   system.stateVersion = "26.05";
 }
  
