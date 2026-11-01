@@ -13,17 +13,23 @@ let
     runtimeInputs = with pkgs; [ fastfetch cbonsai ncurses ];
     text = ''
       clear
+      cbonsai -p
       echo "hello sasha :p"
       echo ""
       echo "          ~ some options for my favorite baby bing ~ "
       echo " ll       ~ list files ~ "
+      echo " cfig     ~ opens configuration.nix in nvim ~ "
+      echo " wrkspc   ~ changes dirs to where configuration.nix is ~ "
+      echo " rib      ~ run it back runs sudo nixos-rebuild switch ~ "
       echo " filecnt  ~ count files in dir ~ "
       echo " mpgToWav ~ convert camcorder footy ~ "
       echo " ranger   ~ file manager ~ "
       echo " cmus     ~ music player ~ "
       echo " git/vim  ~ usual suspects ~ "
+      echo " heave    ~ rib then gitbs ~ "
+      echo " gitbs    ~ adds configuration.nix ~ "
+      echo "gp        ~ this page :o "
       echo ""
-      cbonsai -p
     '';
   };
 
@@ -79,14 +85,6 @@ in
     packages = with pkgs; [ ];
   };
 
-  # neovim in sudo - config
-  environment.etc."root/.config/nvim/init.vim".text = ''
-    augroup nixosConfNumbers
-      autocmd!
-      autocmd BufRead,BufNewFile /etc/nixos/configuration.nix setlocal number
-    augroup END
-  '';
-
   # Groups / Access - ark
   systemd.tmpfiles.rules = [
     "d /root/.config 0755 root root -"
@@ -108,7 +106,6 @@ in
     gnomepage # util
     mpgToWav # scripts
     vim # utilities
-    neovim # utilities
     wget # utilities
     tree # utilities
     eza # utilities
@@ -133,6 +130,12 @@ in
       "gp" = "gnomepage";
       "welcome" = "gnomepage";
       "filecnt" = "ls -1A | wc -l";
+      "wrkspc" = "cd ~ && cd ../../etc/nixos";
+      "cfig" = "wrkspc && nvim configuration.nix";
+      "rib" = "wrkspc && sudo nixos-rebuild switch";
+      "gitbs" = "git add configuration.nix";
+      "heave" = "rib && gitbs";
+      "commit" = "git commit -m ";
     };
     interactiveShellInit = ''
       gnomepage
@@ -149,10 +152,7 @@ in
       packages = { };
       extraContent = {
         init = ''
-	  augroup nixosConfNumber
-	    autocmd!
-	    autocmd BufRead,BufNewFile /etc/nixos/configuration.nix setlocal number
-	  augroup END
+	  :set number
 	'';
       };
     };
@@ -171,7 +171,7 @@ in
   networking.hostName = "sasha";
   networking.networkmanager.enable = true;
 
-  # Hosting local Minecraft Server (Vanilla) - service (local)
+  # Hoshting local Minecraft Server (Vanilla) - service (local)
   services.minecraft-server = {
     enable = true;
     eula = true;
